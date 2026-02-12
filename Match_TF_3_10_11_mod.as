@@ -1,0 +1,1392 @@
+﻿//MOD:29/6/11 - removed playRight/Wrong answer definition - moved to UNITS
+//MOD:27/6/11 - Init at AS mod - NK
+
+
+/* nk
+based on 8_4_11.as, using the same functions but made corrections
+
+
+/*geo
+this piece of code demonstrates show all complete and match!
+I posted the piece of code checkPhrases (with currentframe=3) inside to function check_answers()
+So work together!perhaps it wants tidying!
+*/
+
+/*takis 3-10-2011
+match AND true false code
+*/
+
+
+stop();
+
+var correct = 0;
+var lineCounter=0;
+var myColour=0x0066CC;
+var howManyLines=0;
+//
+function emptyTexts(numOfItems) {
+	for (i=0; i<numOfItems; i++) {
+		theMovie["text"+i+"_txt"].autoSize = true;
+		theMovie["text"+i+"_txt"].text = ""; 
+	}
+}
+//
+function createMatchingClips(numOfItems, myArray, myType, myCorrectArray, myFinalArray) {
+	for (i=0; i<theMovie.phrasesToMatch; i++) {
+		theMovie["myLine"+i+"_mc"].removeMovieClip();
+	}
+	theMovie.nextItem_mc.gotoAndStop(2);
+	theMovie.nextItem_mc.enabled = false;
+	theMovie.nextItem_mc.onRelease = showNextItem;
+	//
+	for (i=0; i<numOfItems; i++) {
+		theMovie["bullet"+i+"_mc"]._x = theMovie["start"+i+"_mc"]._x;
+		theMovie["bullet"+i+"_mc"]._y = theMovie["start"+i+"_mc"]._y;
+		theMovie["bullet"+i+"_mc"].id = i;
+		theMovie["bullet"+i+"_mc"].put = 0;
+		//***
+		theMovie["bullet"+i+"_mc"].startX = theMovie["bullet"+i+"_mc"]._x;
+		theMovie["bullet"+i+"_mc"].startY = theMovie["bullet"+i+"_mc"]._y;
+		theMovie["bullet"+i+"_mc"].myDepth = theMovie["bullet"+i+"_mc"].getDepth();
+		theMovie["bullet"+i+"_mc"].myLineDepth = (100+i);
+		theMovie["bullet"+i+"_mc"].itemsToCheck = numOfItems;
+		theMovie["bullet"+i+"_mc"].myText = myArray[i];
+		theMovie["bullet"+i+"_mc"].myFinalText = myFinalArray[i];
+		theMovie["bullet"+i+"_mc"].myTarget = correctID[i];
+		theMovie["bullet"+i+"_mc"].myType = myType;
+		theMovie["bullet"+i+"_mc"].currentId=999;
+		theMovie["bullet"+i+"_mc"].checkCorrect=0; // 1 = correct , 2 = wrong
+		theMovie["bullet"+i+"_mc"].onPress = drag;
+		theMovie["bullet"+i+"_mc"].onRelease = checking;
+		theMovie["bullet"+i+"_mc"].onReleaseOutside = outside;
+		theMovie["bullet"+i+"_mc"].enabled = true;
+		theMovie["empty"+i+"_mc"].gotoAndStop(1);//**************8
+		theMovie["empty"+i+"_mc"].myTarget = correctID[i];
+		theMovie["empty"+i+"_mc"].myNo = i;
+		theMovie["empty"+i+"_mc"].currentId=999;
+		theMovie["empty"+i+"_mc"].checkCorrect=0; // 1 = correct , 2 = wrong
+		if (myType == 1) {
+			theMovie["empty"+i+"_mc"].id = correctID[i];
+		} else {
+			theMovie["empty"+i+"_mc"].id = i;
+		}
+		theMovie["empty"+i+"_mc"].myText = myCorrectArray[i];
+		theMovie["empty"+i+"_mc"].put = 0;
+		// 
+		theMovie["matchCheck"+i+"_mc"].gotoAndStop(3);
+		theMovie["matchCheck"+i+"_mc"].id=i;
+		theMovie["matchCheck"+i+"_mc"].clicked=0;
+		theMovie["matchCheck"+i+"_mc"].setMeOn=0;
+		theMovie["matchCheck"+i+"_mc"].keepMyCurrentFrame=3;
+		theMovie["matchCheck"+i+"_mc"].onRelease=showSingleSolution;
+		theMovie["matchCheck"+i+"_mc"].enabled=false
+		//
+	}
+	//
+	for (i=0; i<theMovie.drags.length; i++) {
+		theMovie["bullet"+i+"_mc"].myDrags = theMovie.drags[i];
+	}
+	//
+	theMovie._parent.checkAll_mc.gotoAndStop(1);
+	theMovie._parent.checkAll_mc.clicked = 0;
+	theMovie._parent.checkAll_mc.onRelease = check_answers_match;
+	theMovie._parent.checkAll_mc.enabled = false;
+	// *************************************************************
+	theMovie._parent.showAll_mc.gotoAndStop(1);
+	theMovie._parent.showAll_mc.clicked = 0;
+	//theMovie._parent.showAll_mc.onRelease = check_answers;
+	theMovie._parent.showAll_mc.enabled = true;
+	// *************************************************************
+	
+}
+//
+function check_answers(){
+	var lines = 0;
+	if (this.clicked == 0) {
+		this.clicked = 1;
+		this.gotoAndStop(3);
+		theMovie._parent.checkAll_mc.gotoAndStop(2);
+		theMovie._parent.checkAll_mc.enabled=false;
+		// -----------------------------------------   true false ------------------------------------------------
+				for (i=0; i<theMovie.myArray.length; i++) {
+			var checkWrong = 0;
+			for (m=0; m<myNamesArray.length; m++) {
+				myButLetter = myNamesArray[m];
+				if (theMovie["check"+i+"_mc"]._currentframe != 3) {
+					theMovie[myButLetter+i+"_mc"].enabled = false;
+				}
+				if (typeof (theRightArray[i]) == "string") {
+					if ((theMovie[myButLetter+i+"_mc"]._currentframe == 1) and (theMovie[myButLetter+i+"_mc"].myName == theMovie.theRightArray[i])) {
+						//------wrong!
+						checkWrong = 1;
+						theMovie[myButLetter+i+"_mc"].clicked = 1;
+					}
+					if ((theMovie[myButLetter+i+"_mc"]._currentframe == 2) and (theMovie[myButLetter+i+"_mc"].myName == theMovie.theRightArray[i])) {
+						//------correct!
+						theMovie[myButLetter+i+"_mc"].clicked = 2;
+					}
+					if ((theMovie[myButLetter+i+"_mc"]._currentframe == 2) and (theMovie[myButLetter+i+"_mc"].myName<>theMovie.theRightArray[i])) {
+						//------wrong!
+						checkWrong = 1;
+						theMovie[myButLetter+i+"_mc"].clicked = 2;
+					}
+				} else {
+					var findCorrect = 0;
+					for (k=0; k<myNamesArray.length; k++) {
+						if ((theMovie[myButLetter+i+"_mc"]._currentframe == 1) and (theMovie[myButLetter+i+"_mc"].myName == theMovie.theRightArray[i][k])) {
+							checkWrong = 1;
+							theMovie[myButLetter+i+"_mc"].clicked = 1;
+						}
+						if ((theMovie[myButLetter+i+"_mc"]._currentframe == 2) and (theMovie[myButLetter+i+"_mc"].myName == theMovie.theRightArray[i][k])) {
+							findCorrect = 1;
+							theMovie[myButLetter+i+"_mc"].clicked = 2;
+						}
+					}
+					if ((theMovie[myButLetter+i+"_mc"]._currentframe == 2) and (findCorrect == 0)) {
+						checkWrong = 1;
+						theMovie[myButLetter+i+"_mc"].clicked = 2;
+					}
+				}
+			}
+			if (theMovie["check"+i+"_mc"]._currentframe == 1) {
+				if (checkWrong == 0) {
+					theMovie["check"+i+"_mc"].clicked = 1;
+					theMovie["check"+i+"_mc"].gotoAndStop(4);
+				} else {
+					theMovie["check"+i+"_mc"].clicked = 1;
+					theMovie["check"+i+"_mc"].gotoAndStop(5);
+				}
+				theMovie["i"+i+"_mc"]._visible = true;
+				// AUDIOScript Justification
+				theMovie["audioJustify_"+i]._visible = true;
+				theMovie["audioJustify_"+i].gotoAndStop(1);
+				theMovie["audioJustify_"+i].pressed = false;
+			}
+		}
+		// -------------------------------------------------------------------------------------------------------
+		theMovie.nextItem_mc.gotoAndStop(1);
+		theMovie.nextItem_mc.enabled = true;
+		//debug_txt.text=theMovie.empty1_mc.id[1]
+		for (i=0; i<theMovie.phrasesToMatch; i++) {
+			if (theMovie["bullet"+i+"_mc"].put == 0) {
+				theMovie["bullet"+i+"_mc"].enabled = false;
+			}
+			theMovie["matchCheck"+i+"_mc"].gotoAndStop(3);
+			theMovie["matchCheck"+i+"_mc"].enabled=false;
+			// AUDIOScript Justification
+			theMovie["audioJustify_"+i]._visible = true;
+			theMovie["audioJustify_"+i].gotoAndStop(1);
+			theMovie["audioJustify_"+i].pressed = false;			
+			// Justification
+			theMovie["i"+i+"_mc"]._visible = true;
+			theMovie["i"+i+"_mc"].gotoAndStop(1);
+			theMovie["i"+i+"_mc"].pressed = false;			
+		}
+		for (i=0; i<theMovie.phrasesToMatch; i++) {
+			var temp=theMovie["empty"+i+"_mc"].id.length;
+		    for (j=0; j<temp; j++) {
+		         var tempId = theMovie["empty"+i+"_mc"].id[j];
+		         theMovie.createEmptyMovieClip("showLine"+lines+"_mc",50000+lines);
+		         theMovie["showLine"+lines+"_mc"].lineStyle(2,0x0066CC,100);
+		         theMovie["showLine"+lines+"_mc"].moveTo(theMovie["empty"+i+"_mc"]._x,theMovie["empty"+i+"_mc"]._y);
+		         theMovie["showLine"+lines+"_mc"].lineTo(theMovie["start"+tempId+"_mc"]._x,theMovie["start"+tempId+"_mc"]._y);
+		         lines++;
+		     }
+			//var tempId = theMovie["empty"+i+"_mc"].myTarget;
+			//var tempText = theMovie["bullet"+tempId+"_mc"].myFinalText;
+			//theMovie["text"+tempId+"_txt"].text = tempText;			 
+		}
+		for (i=0; i<100; i++) {
+			theMovie["myLine"+i+"_mc"]._alpha=0;
+		}		
+		
+	} else {
+		this.clicked = 0;
+		this.gotoAndStop(1);
+		// -------------------------------------------   true false ----------------------------------------------
+		for (i=0; i<theMovie.myArray.length; i++) {
+	theMovie["i"+i+"_mc"]._visible = false;
+	for (m=0; m<myNamesArray.length; m++) {
+		myButLetter = myNamesArray[m];
+		if (typeof (theRightArray[i]) == "string") {
+		} else {
+			theMovie[myButLetter+i+"_mc"].enabled = true;
+		}
+		if (theMovie[myButLetter+i+"_mc"].clicked == 1) {
+			theMovie[myButLetter+i+"_mc"].enabled = true;
+		}
+		if (theMovie[myButLetter+i+"_mc"].clicked == 0) {
+			theMovie[myButLetter+i+"_mc"].enabled = true;
+		}
+		if (theMovie[myButLetter+i+"_mc"].clicked == 2) {
+			theMovie[myButLetter+i+"_mc"].clicked = 0;
+		}
+	}
+
+	if (theMovie["check"+i+"_mc"]._currentframe != 3) {
+		theMovie["check"+i+"_mc"].clicked = 0;
+		theMovie["check"+i+"_mc"].gotoAndStop(1);
+		theMovie["check"+i+"_mc"].enabled = true;
+		//---------------------------------------
+		theMovie._parent.checkAll_mc.clicked = 0;
+		theMovie._parent.checkAll_mc.gotoAndStop(1);
+		theMovie._parent.checkAll_mc.enabled = true;
+		// AUDIOScript Justification
+		theMovie["audioJustify_"+i]._visible = false;
+		theMovie["audioJustify_"+i].gotoAndStop(1);
+		theMovie["audioJustify_"+i].pressed = false;
+	}
+}
+		// -------------------------------------------------------------------------------------------------------
+		if (howManyLines<>0){
+			theMovie._parent.checkAll_mc.enabled=true;
+			//theMovie._parent.checkAll_mc.gotoAndStop(1);
+		} 
+		theMovie.nextItem_mc.gotoAndStop(2);
+		theMovie.nextItem_mc.enabled = false;
+		for (i=0; i<theMovie.phrasesToMatch; i++) {
+			// AUDIOScript Justification
+			theMovie["audioJustify_"+i]._visible = false;
+			theMovie["audioJustify_"+i].gotoAndStop(1);
+			theMovie["audioJustify_"+i].pressed = false;
+			// Justification
+			theMovie["i"+i+"_mc"]._visible = false;
+			theMovie["i"+i+"_mc"].gotoAndStop(1);
+			theMovie["i"+i+"_mc"].pressed = false;			
+			if (theMovie["bullet"+i+"_mc"].put == 0) {
+				theMovie["bullet"+i+"_mc"].enabled = true;
+				var tempId = theMovie["bullet"+i+"_mc"].id;
+				theMovie["text"+tempId+"_txt"].text = "";
+			}
+			
+			if (theMovie["matchCheck"+i+"_mc"].setMeOn==1){
+				theMovie["matchCheck"+i+"_mc"].enabled=true;
+				theMovie["matchCheck"+i+"_mc"].gotoAndStop(theMovie["matchCheck"+i+"_mc"].keepMyCurrentFrame);
+			    if ((theMovie["matchCheck"+i+"_mc"].keepMyCurrentFrame==4) or (theMovie["matchCheck"+i+"_mc"].keepMyCurrentFrame==5)){
+			// AUDIOScript Justification
+			theMovie["audioJustify_"+i]._visible = true;
+			theMovie["audioJustify_"+i].gotoAndStop(1);
+			theMovie["audioJustify_"+i].pressed = false;
+			// Justification
+			theMovie["i"+i+"_mc"]._visible = true;
+			theMovie["i"+i+"_mc"].gotoAndStop(1);
+			theMovie["i"+i+"_mc"].pressed = false;					
+				}
+			} 
+			//theMovie["showLine"+i+"_mc"].removeMovieClip(); 
+		}
+		var blue=0;
+		var red=0;
+		var green=0;
+	    for (i=0; i<theMovie.phrasesToMatch; i++) {
+		   if (theMovie["matchCheck"+i+"_mc"]._currentframe==1){
+			   blue=1;
+		   }
+		   if (theMovie["matchCheck"+i+"_mc"]._currentframe==4){
+			   green=1;
+		   }	
+		   if (theMovie["matchCheck"+i+"_mc"]._currentframe==5){
+			   red=1;
+			   //theMovie.mytext_txt.text=i;
+		   }		   
+	    }
+	    if ((green==1) or (red==1)){
+	    	theMovie._parent.checkAll_mc.gotoAndStop(3);
+		}
+	    if ((green==0) and (red==0) and (blue==1)){
+	    	theMovie._parent.checkAll_mc.gotoAndStop(1);
+		}
+	    if ((green==0) and (red==0) and (blue==0)){
+	    	theMovie._parent.checkAll_mc.gotoAndStop(2);
+		}		
+		//
+		for (i=0; i<100; i++) {
+			theMovie["myLine"+i+"_mc"]._alpha=100;
+			theMovie["showLine"+i+"_mc"].removeMovieClip();
+		}
+		//
+		if (howManyLines==0){
+			for (i=0; i<theMovie.phrasesToMatch; i++) {
+			    theMovie["matchCheck"+i+"_mc"].enabled = false;
+			    theMovie["matchCheck"+i+"_mc"].gotoAndStop(3);
+			    theMovie["matchCheck"+i+"_mc"].keepMyCurrentFrame=3;
+			    theMovie["matchCheck"+i+"_mc"].setMeOn=0;
+			    theMovie["matchCheck"+i+"_mc"].clicked=0;
+			    // AUDIOScript Justification
+			    theMovie["audioJustify_"+i]._visible = false;
+			    theMovie["audioJustify_"+i].gotoAndStop(1);
+			    theMovie["audioJustify_"+i].pressed = false;
+				// Justification
+			    theMovie["i"+i+"_mc"]._visible = false;
+			    theMovie["i"+i+"_mc"].gotoAndStop(1);
+			    theMovie["i"+i+"_mc"].pressed = false;					
+		   }
+		   theMovie._parent.checkAll_mc.gotoAndStop(2);
+		}
+	}
+	
+	if (this._currentframe == 3) {
+		this.gotoAndStop(3);
+		for (var i=0; i<theMovie.numPhrases; i++) {
+			theMovie["p"+i+"_mc"].gotoAndStop(2);
+			theMovie["p"+i+"_mc"].pressed = true;
+			theMovie["phrase"+i+"_mc"].gotoAndStop(2);
+			theMovie["phrase"+i+"_mc"].text_txt.text = theMovie["p"+i+"_mc"].myText;
+			theMovie["phrase"+i+"_mc"].background_mc._visible = true;	
+			// AUDIOScript Justification
+			theMovie["audioJustify_"+i]._visible = true;
+			theMovie["audioJustify_"+i].gotoAndStop(1);
+			theMovie["audioJustify_"+i].pressed = false;
+			// ShowText Justification
+			theMovie["i"+i+"_mc"]._visible = true;
+			theMovie["i"+i+"_mc"].gotoAndStop(1);
+			theMovie["i"+i+"_mc"].pressed = false;
+		}
+	} else {
+		this.gotoAndStop(1);
+		for (var i=0; i<theMovie.numPhrases; i++) {
+			theMovie["p"+i+"_mc"].gotoAndStop(1);
+			theMovie["p"+i+"_mc"].pressed = false;
+			theMovie["phrase"+i+"_mc"].gotoAndStop(1);
+			theMovie["phrase"+i+"_mc"].text_txt.text = "";
+			theMovie["phrase"+i+"_mc"].background_mc._visible = false;	
+			// AUDIOScript Justification
+			theMovie["audioJustify_"+i]._visible = false;
+			theMovie["audioJustify_"+i].gotoAndStop(1);
+			theMovie["audioJustify_"+i].pressed = false;
+			// ShowText Justification
+			theMovie["i"+i+"_mc"]._visible = false;
+			theMovie["i"+i+"_mc"].gotoAndStop(1);
+			theMovie["i"+i+"_mc"].pressed = false;
+		}
+	}
+	
+	//showAll_answers();
+	//checkPhrases();
+	
+	
+}
+
+//
+function check_answers_match() {
+	var lines = 0;
+    /*	
+	for (i=0; i<100; i++) {
+		theMovie["showLine"+i+"_mc"].removeMovieClip();
+	}
+	*/
+	if (this.clicked == 0) {
+		this.clicked = 1;
+		this.gotoAndStop(3);
+		//  true false
+		for (i=0; i<theMovie.myArray.length; i++) {
+	var checkWrong = 0;
+	for (m=0; m<myNamesArray.length; m++) {
+		myButLetter = myNamesArray[m];
+		if (theMovie["check"+i+"_mc"]._currentframe != 3) {
+			theMovie[myButLetter+i+"_mc"].enabled = false;
+		}
+		if (typeof (theRightArray[i]) == "string") {
+			if ((theMovie[myButLetter+i+"_mc"]._currentframe == 1) and (theMovie[myButLetter+i+"_mc"].myName == theMovie.theRightArray[i])) {
+				//------wrong!
+				checkWrong = 1;
+				theMovie[myButLetter+i+"_mc"].clicked = 1;
+			}
+			if ((theMovie[myButLetter+i+"_mc"]._currentframe == 2) and (theMovie[myButLetter+i+"_mc"].myName == theMovie.theRightArray[i])) {
+				//------correct!
+				theMovie[myButLetter+i+"_mc"].clicked = 2;
+			}
+			if ((theMovie[myButLetter+i+"_mc"]._currentframe == 2) and (theMovie[myButLetter+i+"_mc"].myName<>theMovie.theRightArray[i])) {
+				//------wrong!
+				checkWrong = 1;
+				theMovie[myButLetter+i+"_mc"].clicked = 2;
+			}
+		} else {
+			var findCorrect = 0;
+			for (k=0; k<myNamesArray.length; k++) {
+				if ((theMovie[myButLetter+i+"_mc"]._currentframe == 1) and (theMovie[myButLetter+i+"_mc"].myName == theMovie.theRightArray[i][k])) {
+					checkWrong = 1;
+					theMovie[myButLetter+i+"_mc"].clicked = 1;
+				}
+				if ((theMovie[myButLetter+i+"_mc"]._currentframe == 2) and (theMovie[myButLetter+i+"_mc"].myName == theMovie.theRightArray[i][k])) {
+					findCorrect = 1;
+					theMovie[myButLetter+i+"_mc"].clicked = 2;
+				}
+			}
+			if ((theMovie[myButLetter+i+"_mc"]._currentframe == 2) and (findCorrect == 0)) {
+				checkWrong = 1;
+				theMovie[myButLetter+i+"_mc"].clicked = 2;
+			}
+		}
+	}
+	if (theMovie["check"+i+"_mc"]._currentframe == 1) {
+		if (checkWrong == 0) {
+			theMovie["check"+i+"_mc"].clicked = 1;
+			theMovie["check"+i+"_mc"].gotoAndStop(4);
+		} else {
+			theMovie["check"+i+"_mc"].clicked = 1;
+			theMovie["check"+i+"_mc"].gotoAndStop(5);
+		}
+		theMovie["i"+i+"_mc"]._visible = true;
+		// AUDIOScript Justification
+		theMovie["audioJustify_"+i]._visible = true;
+		theMovie["audioJustify_"+i].gotoAndStop(1);
+		theMovie["audioJustify_"+i].pressed = false;
+	}
+}
+		// ---------------------------------------------------------------------------------------------------------
+		theMovie.nextItem_mc.gotoAndStop(1);
+		theMovie.nextItem_mc.enabled = true;
+		//debug_txt.text=theMovie.empty1_mc.id[1]
+		for (i=0; i<theMovie.phrasesToMatch; i++) {
+			//if (theMovie["bullet"+i+"_mc"].put == 0) {
+				if (theMovie["matchCheck"+i+"_mc"]._currentframe<>3){
+				theMovie["matchCheck"+i+"_mc"].clicked=1;
+				var myDraggedId = theMovie["empty"+i+"_mc"].currentId
+				theMovie["bullet"+myDraggedId+"_mc"].enabled = false;
+				//theMovie["matchCheck"+i+"_mc"].enabled = false;
+				/*
+				if (theMovie["empty"+i+"_mc"].checkCorrect<>0) {
+				   theMovie["matchCheck"+i+"_mc"].gotoAndStop(1);// *********
+				}
+				*/
+				delete theMovie["bullet"+i+"_mc"].onEnterFrame;
+	            // AUDIOScript Justification myNo
+	            theMovie["audioJustify_"+i]._visible = true;
+	            theMovie["audioJustify_"+i].gotoAndStop(1);
+	            theMovie["audioJustify_"+i].pressed = false;	
+	            // Justification myNo
+	            theMovie["i"+i+"_mc"]._visible = true;
+	            theMovie["i"+i+"_mc"].gotoAndStop(1);
+	            theMovie["i"+i+"_mc"].pressed = false;
+	            //				
+				}
+			//}
+		}
+		//
+		for (i=0; i<theMovie.phrasesToMatch; i++) {
+			if (theMovie["empty"+i+"_mc"].checkCorrect<>0){
+		         //theMovie.createEmptyMovieClip("showLine"+lines+"_mc",500+lines);
+				 if (theMovie["empty"+i+"_mc"].checkCorrect==1){
+					 theMovie["matchCheck"+i+"_mc"].gotoAndStop(4);
+					 theMovie["matchCheck"+i+"_mc"].keepMyCurrentFrame=4;
+		             //theMovie["showLine"+lines+"_mc"].lineStyle(2,0x009900,100);
+				 } else {
+					 if (theMovie["empty"+i+"_mc"].checkCorrect==2){
+						 theMovie["matchCheck"+i+"_mc"].gotoAndStop(5);
+						  theMovie["matchCheck"+i+"_mc"].keepMyCurrentFrame=5;
+						// theMovie["showLine"+lines+"_mc"].lineStyle(2,0xCC0000,100);
+					 }
+				 }
+				 var tempId=theMovie["empty"+i+"_mc"].currentId
+	             //theMovie["showLine"+lines+"_mc"].moveTo(theMovie["empty"+i+"_mc"]._x,theMovie["empty"+i+"_mc"]._y);
+				 //theMovie["showLine"+lines+"_mc"].lineTo(theMovie["start"+tempId+"_mc"]._x, theMovie["start"+tempId+"_mc"]._y);
+		         //lines++;
+			 }		
+		}
+		//
+	} else {
+		this.clicked = 0;
+		this.gotoAndStop(1);
+		// ---------------------------------------- true false -----------------------------------------------
+		for (i=0; i<theMovie.myArray.length; i++) {
+	theMovie["i"+i+"_mc"]._visible = false;
+	for (m=0; m<myNamesArray.length; m++) {
+		myButLetter = myNamesArray[m];
+		if (typeof (theRightArray[i]) == "string") {
+		} else {
+			theMovie[myButLetter+i+"_mc"].enabled = true;
+		}
+		if (theMovie[myButLetter+i+"_mc"].clicked == 1) {
+			theMovie[myButLetter+i+"_mc"].enabled = true;
+		}
+		if (theMovie[myButLetter+i+"_mc"].clicked == 0) {
+			theMovie[myButLetter+i+"_mc"].enabled = true;
+		}
+		if (theMovie[myButLetter+i+"_mc"].clicked == 2) {
+			theMovie[myButLetter+i+"_mc"].clicked = 0;
+		}
+	}
+
+	if (theMovie["check"+i+"_mc"]._currentframe != 3) {
+		theMovie["check"+i+"_mc"].clicked = 0;
+		theMovie["check"+i+"_mc"].gotoAndStop(1);
+		theMovie["check"+i+"_mc"].enabled = true;
+		//---------------------------------------
+		theMovie._parent.checkAll_mc.clicked = 0;
+		theMovie._parent.checkAll_mc.gotoAndStop(1);
+		theMovie._parent.checkAll_mc.enabled = true;
+		// AUDIOScript Justification
+		theMovie["audioJustify_"+i]._visible = false;
+		theMovie["audioJustify_"+i].gotoAndStop(1);
+		theMovie["audioJustify_"+i].pressed = false;
+	}
+}
+		//
+		theMovie.nextItem_mc.gotoAndStop(2);
+		theMovie.nextItem_mc.enabled = false;
+		for (i=0; i<theMovie.phrasesToMatch; i++) {
+	        // AUDIOScript Justification myNo
+	        theMovie["audioJustify_"+i]._visible = false;
+	        theMovie["audioJustify_"+i].gotoAndStop(1);
+	        theMovie["audioJustify_"+i].pressed = false;	
+	        // Justification myNo
+	        theMovie["i"+i+"_mc"]._visible = false;
+	        theMovie["i"+i+"_mc"].gotoAndStop(1);
+	        theMovie["i"+i+"_mc"].pressed = false;
+	        //			
+			//if (theMovie["bullet"+i+"_mc"].put == 0) {
+				theMovie["bullet"+i+"_mc"].enabled = true;
+				if (theMovie["empty"+i+"_mc"].checkCorrect<>0){
+				   theMovie["matchCheck"+i+"_mc"].enabled = true;
+				   theMovie["matchCheck"+i+"_mc"].gotoAndStop(1);
+				   theMovie["matchCheck"+i+"_mc"].keepMyCurrentFrame=1;
+				   theMovie["matchCheck"+i+"_mc"].clicked=0;
+				}
+				//var tempId = theMovie["bullet"+i+"_mc"].id;
+				//theMovie["text"+tempId+"_txt"].text = "";
+			//}
+			//theMovie["showLine"+i+"_mc"].removeMovieClip(); 
+		}
+		/*
+		for (i=0; i<100; i++) {
+			theMovie["showLine"+i+"_mc"].removeMovieClip();
+		}
+		*/
+		
+		
+	}
+	
+	
+}
+
+
+//
+function showSingleSolution(){
+	if (this.clicked==0){
+		this.clicked=1;
+		this.gotoAndStop(1);
+		this.keepMyCurrentFrame=1;
+		//theMovie.createEmptyMovieClip("showLine"+this.id+"_mc",5000+this.id);
+		if (theMovie["empty"+this.id+"_mc"].checkCorrect==1){
+			 theMovie["matchCheck"+this.id+"_mc"].gotoAndStop(4);
+			 theMovie["matchCheck"+this.id+"_mc"].keepMyCurrentFrame=4;
+			 if (!theMovie.muteSound){playRightAnswer();}
+			//theMovie["showLine"+this.id+"_mc"].lineStyle(2,0x009900,100);
+		} else {
+		   if (theMovie["empty"+this.id+"_mc"].checkCorrect==2){
+			   theMovie["matchCheck"+this.id+"_mc"].gotoAndStop(5);
+			   theMovie["matchCheck"+this.id+"_mc"].keepMyCurrentFrame=5;
+			   if (!theMovie.muteSound){playWrongAnswer();}
+			 //theMovie["showLine"+this.id+"_mc"].lineStyle(2,0xCC0000,100);
+		  }
+	   }
+	   // AUDIOScript Justification myNo
+	   theMovie["audioJustify_"+this.id]._visible = true;
+	   theMovie["audioJustify_"+this.id].gotoAndStop(1);
+	   theMovie["audioJustify_"+this.id].pressed = false;	
+	   // Justification myNo
+	   theMovie["i"+this.id+"_mc"]._visible = true;
+	   theMovie["i"+this.id+"_mc"].gotoAndStop(1);
+	   theMovie["i"+this.id+"_mc"].pressed = false;
+	   //
+	   var tempId=theMovie["empty"+this.id+"_mc"].currentId;
+	   theMovie["bullet"+tempId+"_mc"].enabled=false;
+	   var checkMe=0;
+	   for (i=0; i<theMovie.phrasesToMatch; i++) {
+		   if (theMovie["matchCheck"+i+"_mc"]._currentframe==1){
+			   theMovie["matchCheck"+i+"_mc"].keepMyCurrentFrame=1;
+			   checkMe=1;
+		   }
+	   }
+	   if (checkMe==0){
+	    	theMovie._parent.checkAll_mc.gotoAndStop(3);
+			theMovie._parent.checkAll_mc.clicked = 1;
+	   }
+	   /*
+	   theMovie["showLine"+this.id+"_mc"].moveTo(theMovie["empty"+this.id+"_mc"]._x,theMovie["empty"+this.id+"_mc"]._y);
+	   theMovie["showLine"+this.id+"_mc"].lineTo(theMovie["start"+tempId+"_mc"]._x, theMovie["start"+tempId+"_mc"]._y);
+	   */
+	} else {
+		this.clicked=0;
+		this.gotoAndStop(1);
+		this.keepMyCurrentFrame=1;
+		var tempId=theMovie["empty"+this.id+"_mc"].currentId
+		theMovie["bullet"+tempId+"_mc"].enabled=true;
+	    	theMovie._parent.checkAll_mc.gotoAndStop(1);
+			theMovie._parent.checkAll_mc.clicked = 0;
+	   // AUDIOScript Justification myNo
+	   theMovie["audioJustify_"+this.id]._visible = false;
+	   theMovie["audioJustify_"+this.id].gotoAndStop(1);
+	   theMovie["audioJustify_"+this.id].pressed = false;	
+	   // Justification myNo
+	   theMovie["i"+this.id+"_mc"]._visible = false;
+	   theMovie["i"+this.id+"_mc"].gotoAndStop(1);
+	   theMovie["i"+this.id+"_mc"].pressed = false;
+	   //  
+     	//theMovie["showLine"+this.id+"_mc"].removeMovieClip();
+	}
+	
+}
+//
+function drag() {
+	this.swapDepths(1000);
+	this.startDrag();
+	if (this._x<>this.startX){ 
+	howManyLines-=1;
+	if (howManyLines<1){
+	   theMovie._parent.checkAll_mc.gotoAndStop(2);
+	   theMovie._parent.checkAll_mc.enabled=false;
+	   howManyLines=0;
+	 }	
+	}
+	if (this.currentId<>999){
+		theMovie["empty"+this.currentId+"_mc"].checkCorrect=0
+		theMovie["empty"+this.currentId+"_mc"].put=0;
+		theMovie["empty"+this.currentId+"_mc"].gotoAndStop(1)
+		theMovie["matchCheck"+this.currentId+"_mc"].enabled=false;
+		theMovie["matchCheck"+this.currentId+"_mc"].gotoAndStop(3);
+		theMovie["matchCheck"+this.currentId+"_mc"].setMeOn=0;//6-10-2011 new
+		this.currentId=999;//6-10-2011 new		
+		// AUDIOScript Justification
+		theMovie["audioJustify_"+this.currentId]._visible = false;
+		theMovie["audioJustify_"+this.currentId].gotoAndStop(1);
+		theMovie["audioJustify_"+this.currentId].pressed = false;
+		//  Justification
+		theMovie["i"+this.currentId+"_mc"]._visible = false;
+		theMovie["i"+this.currentId+"_mc"].gotoAndStop(1);
+		theMovie["i"+this.currentId+"_mc"].pressed = false;			
+	}
+	this.colour=myColour
+	theMovie.createEmptyMovieClip("myLine"+this.id+"_mc", this.myLineDepth);
+	theMovie["myLine"+this.id+"_mc"].colour=this.colour;
+	theMovie["myLine"+this.id+"_mc"].myAlpha=100;
+	theMovie["myLine"+this.id+"_mc"].lineStyle(2, this.colour, 100);
+	theMovie["myLine"+this.id+"_mc"].checkCorrect=0;
+	theMovie["myLine"+this.id+"_mc"].moveTo(this._x, this._y);
+	theMovie["myLine"+this.id+"_mc"].lineTo(theMovie["start"+this.id+"_mc"]._x, theMovie["start"+this.id+"_mc"]._y);
+	this.onEnterFrame = drawMe;
+}
+//
+function drawMe() {
+	if (theMovie._parent.showAll_mc.clicked==0){
+	theMovie.createEmptyMovieClip("myLine"+this.id+"_mc", this.myLineDepth);
+	theMovie["myLine"+this.id+"_mc"].lineStyle(2, this.colour, 100);
+	theMovie["myLine"+this.id+"_mc"].moveTo(this._x, this._y);
+	theMovie["myLine"+this.id+"_mc"].lineTo(theMovie["start"+this.id+"_mc"]._x, theMovie["start"+this.id+"_mc"]._y);
+	}
+}
+//
+function checking() {  
+	this.stopDrag();
+	this.swapDepths(this.myDepth);
+	var hitclip = "none";
+	var found = 0;
+	for (i=0; i<this.itemsToCheck; i++) {
+		if (this.hitTest(theMovie["empty"+i+"_mc"])) {
+			hitclip = theMovie["empty"+i+"_mc"];
+			for (j=0; j<hitclip.id.length; j++) {
+				if (this.id == hitclip.id[j]) {
+					found = 1;
+				}
+			}
+			break;
+		}
+	}
+	if (((hitclip<>"none") and (found == 1) and (this.myType == 1)) or ((hitclip<>"none") and (this.myText == hitclip.myText) and (this.myType == 2))) {
+			this._x = hitclip._x;
+			this._y = hitclip._y;
+			this.swapDepths(this.myDepth);
+			correct += 1;
+			if (hitclip.put==0){
+				howManyLines +=1;
+				theMovie._parent.checkAll_mc.gotoAndStop(1);
+			    theMovie._parent.checkAll_mc.enabled=true;
+			    hitclip.put = 1;
+				hitclip.currentId=this.id;
+			    hitclip.gotoAndPlay(this._currentframe);
+				this.currentId=hitclip.myNo;
+			    this.myDrags -= 1;
+			    lineCounter++;
+			    var myNum:Number = this.myLineDepth+100+hitclip.myNo+lineCounter;
+				this.checkCorrect=1;
+				theMovie["myLine"+this.id+"_mc"].checkCorrect=1;
+				hitclip.checkCorrect=1;
+				theMovie["matchCheck"+hitclip.myNo+"_mc"].enabled=true;
+				theMovie["matchCheck"+hitclip.myNo+"_mc"].setMeOn=1;
+				theMovie["matchCheck"+hitclip.myNo+"_mc"].gotoAndStop(1);
+				theMovie["matchCheck"+hitclip.myNo+"_mc"].keepMyCurrentFrame=1;
+				/*
+				// AUDIOScript Justification myNo
+				theMovie["audioJustify_"+hitclip.myNo]._visible = true;
+				theMovie["audioJustify_"+hitclip.myNo].gotoAndStop(1);
+				theMovie["audioJustify_"+hitclip.myNo].pressed = false;				
+			    // Justification 
+			    theMovie["i"+hitclip.myNo+"_mc"]._visible = true;
+			    theMovie["i"+hitclip.myNo+"_mc"].gotoAndStop(1);
+			    theMovie["i"+hitclip.myNo+"_mc"].pressed = false;
+			    //
+				*/
+			    if (this.myDrags == 0) {
+				   //this.enabled = false;
+				   //this.put = 1;
+			    } 				
+			//playRightAnswer();
+			} else {
+				 this._x = this.startX;
+				 this._y = this.startY;
+				 howManyLines-=1;
+		         if (howManyLines==0){
+			         theMovie._parent.checkAll_mc.gotoAndStop(2);
+			         theMovie._parent.checkAll_mc.enabled=false;
+					 for (i=0; i<theMovie.phrasesToMatch; i++) {
+				         theMovie["matchCheck"+i+"_mc"].enabled = false;
+				         theMovie["matchCheck"+i+"_mc"].gotoAndStop(3);
+				         theMovie["matchCheck"+i+"_mc"].keepMyCurrentFrame=3;
+						 theMovie["matchCheck"+i+"_mc"].setMeOn=0;
+				         theMovie["matchCheck"+i+"_mc"].clicked=0;						 
+					 }					 
+		         }				 
+			}
+			/*
+			if (this.myType == 1) {
+				if (correct == this.itemsToCheck) {
+					theMovie._parent.checkAll_mc.enabled = false;
+					theMovie._parent.checkAll_mc.gotoAndStop(2);
+				}
+			}
+			*/
+			//} //else {
+			  //	   this._x = this.startX;
+			  //     this._y = this.startY;
+			//}
+		
+		if (this.myType == 2) {
+			var tempText = this.myFinalText;
+			var tempId = hitclip.id;
+			theMovie["text"+this.id+"_txt"].text = tempText;
+			if (correct == this.itemsToCheck) {
+				correct = 0;
+				theMovie._parent.checkAll_mc.enabled = false;
+				theMovie.nextItem_mc.gotoAndStop(1);
+				theMovie.nextItem_mc.enabled = true;
+				//theMovie.control_mc.timer = 0;
+				//theMovie.control_mc.onEnterFrame = pauseMe;
+			}
+		}
+	} else {
+		//delete this.onEnterFrame;
+		//theMovie["myLine"+this.id+"_mc"].removeMovieClip();
+		if (((hitclip<>"none") and (hitclip.put==0) and (this.id<>hitclip.id) and (this.myType == 1)) or ((hitclip<>"none") and (this.myText<>hitclip.myText) and (this.myType == 2))) {
+			//this._x = this.startX;
+			//this._y = this.startY;
+			//theMovie["myLine"+this.id+"_mc"].removeMovieClip();
+			hitclip.put = 1;
+			this._x = hitclip._x;
+			this._y = hitclip._y;
+			this.swapDepths(this.myDepth);
+			this.checkCorrect=2;
+			this.currentId=hitclip.myNo;
+			theMovie["myLine"+this.id+"_mc"].checkCorrect=2;
+			hitclip.checkCorrect=2;
+			hitclip.currentId=this.id;
+			theMovie["matchCheck"+hitclip.myNo+"_mc"].enabled=true;
+			theMovie["matchCheck"+hitclip.myNo+"_mc"].setMeOn=1; // new
+			theMovie["matchCheck"+hitclip.myNo+"_mc"].gotoAndStop(1);
+			theMovie["matchCheck"+hitclip.myNo+"_mc"].keepMyCurrentFrame=1;
+			howManyLines+=1;
+			/*
+			// AUDIOScript Justification myNo
+			theMovie["audioJustify_"+hitclip.myNo]._visible = true;
+			theMovie["audioJustify_"+hitclip.myNo].gotoAndStop(1);
+			theMovie["audioJustify_"+hitclip.myNo].pressed = false;				
+			// Justification
+			theMovie["i"+hitclip.myNo+"_mc"]._visible = true;
+			theMovie["i"+hitclip.myNo+"_mc"].gotoAndStop(1);
+			theMovie["i"+hitclip.myNo+"_mc"].pressed = false;
+			//
+			*/
+			theMovie._parent.checkAll_mc.gotoAndStop(1);
+			theMovie._parent.checkAll_mc.enabled=true;
+			//playWrongAnswer();
+		} else {
+			if ((hitclip == "none") or (hitclip.put==1)){
+				this._x = this.startX;
+				this._y = this.startY;
+				if (hitclip.put==0){
+				 howManyLines-=1;
+		         if (howManyLines==0){
+			         theMovie._parent.checkAll_mc.gotoAndStop(2);
+			         theMovie._parent.checkAll_mc.enabled=false;
+					 for (i=0; i<theMovie.phrasesToMatch; i++) {
+				         theMovie["matchCheck"+i+"_mc"].enabled = false;
+				         theMovie["matchCheck"+i+"_mc"].gotoAndStop(3);
+				         theMovie["matchCheck"+i+"_mc"].keepMyCurrentFrame=3;
+						 theMovie["matchCheck"+i+"_mc"].setMeOn=0;
+				         theMovie["matchCheck"+i+"_mc"].clicked=0;						 
+					 }
+		         }
+			  }
+			}
+		}
+	}
+	//theMovie.text_txt.text=howManyLines;
+}
+//
+function showNextItem() {
+	theMovie.nextFrame();
+	for (i=0; i<theMovie.phrasesToMatch; i++) {
+		theMovie["myLine"+i+"_mc"].removeMovieClip();
+		theMovie["showLine"+i+"_mc"].removeMovieClip();
+	}
+	if (theMovie._totalframes>theMovie._currentframe) {
+		theMovie._parent.checkAll_mc.enabled = true;
+	} else {
+		theMovie._parent.checkAll_mc.gotoAndStop(2);
+		theMovie._parent.checkAll_mc.enabled = false;
+	}
+}
+//
+function outside() {
+	this.stopDrag();
+	this._x = this.startX;
+	this._y = this.startY;
+}
+//
+
+//init from exercise match
+emptyTexts(theMovie.phrasesToMatch);
+createMatchingClips(theMovie.phrasesToMatch,theMovie.myArray,1);
+
+//init from exercise complete
+initPhrases();
+/////////////////////////////////////////////   true / false   ////////////////////////////////////////////////////
+//MOD:29/6/11 - removed playRight/Wrong answer definition - moved to UNITS
+//MOD:27/6/11 - Init at AS mod - NK
+
+stop();
+//justifications
+/*
+
+*/
+
+var myNamesArray = new Array("a", "b", "c", "d", "e", "f");
+function i_mc_onRelease() {
+	if (!this.pressed) {
+		for (i=0; i<theMovie.theRightArray.length; i++) {
+			theMovie["i"+i+"_mc"].pressed = false;
+			theMovie["info"+i+"_mc"]._visible = false;
+			theTextPointer["justification"+i+"_mc"]._visible = false;
+			// Read the array for Scroll steps of Justification
+			theTextPointer["justification"+i+"_mc"].mySteps = theMovie.theStepsJustificationArray[i]
+			// Read the array for Scroll steps of Justification
+		}
+		this.pressed = true;
+		//this.gotoAndStop(2);
+		theMovie["info"+this.myNo+"_mc"]._visible = true;
+		theMovie.text_1_mc._visible = true;
+		theTextPointer["justification"+this.myNo+"_mc"]._visible = true;
+		theMovie._parent.showText_mc.clicked = 1;
+		theMovie._parent.showText_mc.gotoAndPlay(3);
+		_root.sb1.send("showXCanvas", "ShowText");
+		// Move Scrollbar
+		theTextPointer._parent.UpdateScrollBar(this.myNo)
+		// Move Scrollbar		
+	} else {
+		this.pressed = false;
+		theMovie["info"+this.myNo+"_mc"]._visible = false;
+		theTextPointer["justification"+this.myNo+"_mc"]._visible = false;
+		theMovie._parent.showText_mc.clicked = 0;
+		theMovie._parent.showText_mc.gotoAndPlay(1);
+		_root.sb1.send("hideXCanvas", "ShowText");
+	}
+}
+//
+function buttonReleaseOutside() {
+	this.gotoAndStop(1);
+}
+//
+function buttonRelease() {
+	for (i=0; i<this.myItems; i++) {
+		for (m=0; m<myNamesArray.length; m++) {
+			myButLetter = myNamesArray[m];
+			if (theMovie[myButLetter+i+"_mc"].myNo == this.myNo and theMovie[myButLetter+i+"_mc"]._name<>this._name) {
+				if (typeof (theRightArray[this.myNo]) == "string") {
+					theMovie[myButLetter+i+"_mc"].gotoAndStop(1);
+					theMovie[myButLetter+i+"_mc"].enabled = true;
+				}
+			}
+		}
+	}
+	if (this._currentframe == 1) {
+		this.gotoAndStop(2);
+		if (typeof (theRightArray[this.myNo]) == "string") {
+			theMovie.myArray[this.myNo] = this.myName;
+			this.enabled = false;
+		} else {
+			theMovie.myArray[this.myNo][m] = this.myName;
+		}
+	} else {
+		if (typeof (theRightArray[this.myNo]) == "string") {
+			//theMovie.myArray[this.myNo] = 0;
+		} else {
+			this.gotoAndStop(1);
+			theMovie.myArray[this.myNo][m] = 0;
+		}
+	}
+
+	var checkDownButton = 0;
+	theMovie._parent.checkAll_mc.clicked = 1;
+	theMovie._parent.checkAll_mc.gotoAndStop(2);
+	theMovie._parent.checkAll_mc.enabled = false;
+	for (i=0; i<this.myItems; i++) {
+		for (m=0; m<myNamesArray.length; m++) {
+			myButLetter = myNamesArray[m];
+			if (theMovie[myButLetter+i+"_mc"]._currentframe != 1) {
+				checkDownButton = 1;
+			}
+		}
+	}
+	if (checkDownButton == 0) {
+		theMovie["check"+this.myNo+"_mc"].clicked =1;
+		theMovie["check"+this.myNo+"_mc"].gotoAndStop(3);
+		theMovie["check"+this.myNo+"_mc"].enabled = false;
+	} else {
+		theMovie["check"+this.myNo+"_mc"].clicked = 0;
+		theMovie["check"+this.myNo+"_mc"].gotoAndStop(1);
+		theMovie["check"+this.myNo+"_mc"].enabled = true;
+		theMovie._parent.checkAll_mc.clicked = 0;
+		theMovie._parent.checkAll_mc.gotoAndStop(1);
+		theMovie._parent.checkAll_mc.enabled = true;
+	}
+}
+//
+function buttonPress() {
+	//this.gotoAndStop(2);
+}
+//
+function initTrueFalse(numOfItems, myChoices, myParameter) {
+	for (i=0; i<numOfItems; i++) {
+		for (m=0; m<myNamesArray.length; m++) {
+			myButLetter = myNamesArray[m];
+			theMovie[myButLetter+i+"_mc"].gotoAndStop(1);
+			theMovie[myButLetter+i+"_mc"].onRelease = buttonRelease;
+			if (myParameter<>2) {
+				theMovie[myButLetter+i+"_mc"].onPress = buttonPress;
+				theMovie[myButLetter+i+"_mc"].onReleaseOutside = buttonReleaseOutside;
+			}
+			theMovie[myButLetter+i+"_mc"].clicked = 0;
+			theMovie[myButLetter+i+"_mc"].myNo = i;
+			theMovie[myButLetter+i+"_mc"].myItems = numOfItems;
+			theMovie[myButLetter+i+"_mc"].myName = myButLetter;
+			theMovie[myButLetter+i+"_mc"].myState = 0; //------for showAll
+		}
+
+		//---------------------------
+		theMovie["check"+i+"_mc"].myNum = i;
+		theMovie["check"+i+"_mc"].clicked = 0;
+		theMovie["check"+i+"_mc"].gotoAndStop(3);
+		theMovie["check"+i+"_mc"].enabled = false;
+		theMovie["check"+i+"_mc"].onRelease = checkOneAnswer;
+		//----------------------------
+		theMovie["i"+i+"_mc"].onRelease = i_mc_onRelease;
+		theMovie["i"+i+"_mc"].myNo = i;
+		theMovie["i"+i+"_mc"].pressed = false;
+		theMovie["i"+i+"_mc"]._visible = false;
+		theMovie["info"+i+"_mc"]._visible = false;
+		theMovie.theTextPointer["justification"+i+"_mc"]._visible = false;
+	}
+	//
+	theMovie._parent.checkAll_mc.gotoAndStop(2);
+	theMovie._parent.checkAll_mc.enabled = false;
+	theMovie._parent.checkAll_mc.clicked = 0;
+	//theMovie._parent.checkAll_mc.onRelease = check_answers;
+	//
+	theMovie._parent.showAll_mc.gotoAndStop(1);
+	theMovie._parent.showAll_mc.enabled = true;
+	theMovie._parent.showAll_mc.clicked = 0;
+	theMovie._parent.showAll_mc.onRelease = showAll_answers;
+}
+
+function showAll_answers() {
+    var lines = 0;
+	if (this.clicked == 0) {
+		this.clicked = 1;
+		this.gotoAndStop(3);
+		// for match
+		theMovie.nextItem_mc.gotoAndStop(1);
+		theMovie.nextItem_mc.enabled = true;
+		//debug_txt.text=theMovie.empty1_mc.id[1]
+		for (i=0; i<theMovie.phrasesToMatch; i++) {
+			if (theMovie["bullet"+i+"_mc"].put == 0) {
+				theMovie["bullet"+i+"_mc"].enabled = false;
+			}
+			theMovie["matchCheck"+i+"_mc"].gotoAndStop(3);
+			theMovie["matchCheck"+i+"_mc"].enabled=false;
+			// AUDIOScript Justification
+			theMovie["audioJustify_"+i]._visible = true;
+			theMovie["audioJustify_"+i].gotoAndStop(1);
+			theMovie["audioJustify_"+i].pressed = false;			
+			// Justification
+			theMovie["i"+i+"_mc"]._visible = true;
+			theMovie["i"+i+"_mc"].gotoAndStop(1);
+			theMovie["i"+i+"_mc"].pressed = false;			
+		}
+		for (i=0; i<theMovie.phrasesToMatch; i++) {
+			var temp=theMovie["empty"+i+"_mc"].id.length;
+		    for (j=0; j<temp; j++) {
+		         var tempId = theMovie["empty"+i+"_mc"].id[j];
+		         theMovie.createEmptyMovieClip("showLine"+lines+"_mc",50000+lines);
+		         theMovie["showLine"+lines+"_mc"].lineStyle(2,0x0066CC,100);
+		         theMovie["showLine"+lines+"_mc"].moveTo(theMovie["empty"+i+"_mc"]._x,theMovie["empty"+i+"_mc"]._y);
+		         theMovie["showLine"+lines+"_mc"].lineTo(theMovie["start"+tempId+"_mc"]._x,theMovie["start"+tempId+"_mc"]._y);
+		         lines++;
+		     }
+			//var tempId = theMovie["empty"+i+"_mc"].myTarget;
+			//var tempText = theMovie["bullet"+tempId+"_mc"].myFinalText;
+			//theMovie["text"+tempId+"_txt"].text = tempText;			 
+		}
+		for (i=0; i<100; i++) {
+			theMovie["myLine"+i+"_mc"]._alpha=0;
+		}		
+		//
+			theMovie._parent.checkAll_mc.myRightFrame = theMovie._parent.checkAll_mc._currentframe
+			theMovie._parent.checkAll_mc.enabled=false
+			theMovie._parent.checkAll_mc.gotoAndStop(2);
+			//---------------------------		
+		for (i = 0; i < theMovie.myArray.length; i++) {
+			for (m = 0; m < myNamesArray.length; m++) {
+				myButLetter = myNamesArray[m];
+				theMovie[myButLetter + i + "_mc"].myState = 0				
+				theMovie[myButLetter + i + "_mc"].enabled = false;
+				theMovie["i"+i+"_mc"]._visible = true;
+				if (typeof (theRightArray[i]) == "string") {
+					if ((theMovie[myButLetter + i + "_mc"]._currentframe == 1) and (theMovie[myButLetter + i + "_mc"].myName == theMovie.theRightArray[i])) {
+						trace("1")
+						theMovie[myButLetter + i + "_mc"].myState = 0
+						theMovie[myButLetter + i + "_mc"].gotoAndStop(4);
+					}
+					if ((theMovie[myButLetter + i + "_mc"]._currentframe == 2) and (theMovie[myButLetter + i + "_mc"].myName == theMovie.theRightArray[i])) {
+						trace("2")
+						theMovie[myButLetter + i + "_mc"].myState = 1
+						theMovie[myButLetter + i + "_mc"].gotoAndStop(4);
+					}
+					if ((theMovie[myButLetter + i + "_mc"]._currentframe == 2) and (theMovie[myButLetter + i + "_mc"].myName <> theMovie.theRightArray[i])) {
+						trace("3")
+						theMovie[myButLetter + i + "_mc"].myState = 1
+						theMovie[myButLetter + i + "_mc"].gotoAndStop(1);
+					}
+				} else {
+					var clickedWrongSingle = 0
+					for (k = 0; k < myNamesArray.length; k++) {
+						if ((theMovie[myButLetter + i + "_mc"]._currentframe == 1) and (theMovie[myButLetter + i + "_mc"].myName == theMovie.theRightArray[i][k])) {
+							trace("4")
+							theMovie[myButLetter + i + "_mc"].myState = 0
+							theMovie[myButLetter + i + "_mc"].gotoAndStop(4);
+						}
+						if ((theMovie[myButLetter + i + "_mc"]._currentframe == 2) and (theMovie[myButLetter + i + "_mc"].myName == theMovie.theRightArray[i][k])) {
+							trace("5")
+							clickedWrongSingle = 1
+							theMovie[myButLetter + i + "_mc"].myState = 1
+							theMovie[myButLetter + i + "_mc"].gotoAndStop(4);
+						}
+					}
+					if ((theMovie[myButLetter + i + "_mc"]._currentframe == 2)&&(clickedWrongSingle == 0)) {
+							trace("5")
+							theMovie[myButLetter + i + "_mc"].myState = 1
+							theMovie[myButLetter + i + "_mc"].gotoAndStop(1);
+					}
+				}
+			}
+			theMovie["check" + i + "_mc"].myRightFrame = theMovie["check" + i + "_mc"]._currentframe
+			theMovie["check" + i + "_mc"].enabled=false
+			theMovie["check" + i + "_mc"].gotoAndStop(3);
+			// AUDIOScript Justification
+			theMovie["audioJustify_"+i]._visible = true;
+			theMovie["audioJustify_"+i].gotoAndStop(1);
+			theMovie["audioJustify_"+i].pressed = false;
+		}
+	} else {
+		this.clicked = 0;
+		this.gotoAndStop(1);
+		// for match
+				if (howManyLines<>0){
+			theMovie._parent.checkAll_mc.enabled=true;
+			//theMovie._parent.checkAll_mc.gotoAndStop(1);
+		} 
+		theMovie.nextItem_mc.gotoAndStop(2);
+		theMovie.nextItem_mc.enabled = false;
+		for (i=0; i<theMovie.phrasesToMatch; i++) {
+			// AUDIOScript Justification
+			theMovie["audioJustify_"+i]._visible = false;
+			theMovie["audioJustify_"+i].gotoAndStop(1);
+			theMovie["audioJustify_"+i].pressed = false;
+			// Justification
+			theMovie["i"+i+"_mc"]._visible = false;
+			theMovie["i"+i+"_mc"].gotoAndStop(1);
+			theMovie["i"+i+"_mc"].pressed = false;			
+			if (theMovie["bullet"+i+"_mc"].put == 0) {
+				theMovie["bullet"+i+"_mc"].enabled = true;
+				var tempId = theMovie["bullet"+i+"_mc"].id;
+				theMovie["text"+tempId+"_txt"].text = "";
+			}
+			
+			if (theMovie["matchCheck"+i+"_mc"].setMeOn==1){
+				theMovie["matchCheck"+i+"_mc"].enabled=true;
+				theMovie["matchCheck"+i+"_mc"].gotoAndStop(theMovie["matchCheck"+i+"_mc"].keepMyCurrentFrame);
+			    if ((theMovie["matchCheck"+i+"_mc"].keepMyCurrentFrame==4) or (theMovie["matchCheck"+i+"_mc"].keepMyCurrentFrame==5)){
+			// AUDIOScript Justification
+			theMovie["audioJustify_"+i]._visible = true;
+			theMovie["audioJustify_"+i].gotoAndStop(1);
+			theMovie["audioJustify_"+i].pressed = false;
+			// Justification
+			theMovie["i"+i+"_mc"]._visible = true;
+			theMovie["i"+i+"_mc"].gotoAndStop(1);
+			theMovie["i"+i+"_mc"].pressed = false;					
+				}
+			} 
+			//theMovie["showLine"+i+"_mc"].removeMovieClip(); 
+		}
+		var blue=0;
+		var red=0;
+		var green=0;
+	    for (i=0; i<theMovie.phrasesToMatch; i++) {
+		   if (theMovie["matchCheck"+i+"_mc"]._currentframe==1){
+			   blue=1;
+		   }
+		   if (theMovie["matchCheck"+i+"_mc"]._currentframe==4){
+			   green=1;
+		   }	
+		   if (theMovie["matchCheck"+i+"_mc"]._currentframe==5){
+			   red=1;
+			   //theMovie.mytext_txt.text=i;
+		   }		   
+	    }
+	    if ((green==1) or (red==1)){
+	    	theMovie._parent.checkAll_mc.gotoAndStop(3);
+		}
+	    if ((green==0) and (red==0) and (blue==1)){
+	    	theMovie._parent.checkAll_mc.gotoAndStop(1);
+		}
+	    if ((green==0) and (red==0) and (blue==0)){
+	    	theMovie._parent.checkAll_mc.gotoAndStop(2);
+		}		
+		//
+		for (i=0; i<100; i++) {
+			theMovie["myLine"+i+"_mc"]._alpha=100;
+			theMovie["showLine"+i+"_mc"].removeMovieClip();
+		}
+		//
+		if (howManyLines==0){
+			for (i=0; i<theMovie.phrasesToMatch; i++) {
+			    theMovie["matchCheck"+i+"_mc"].enabled = false;
+			    theMovie["matchCheck"+i+"_mc"].gotoAndStop(3);
+			    theMovie["matchCheck"+i+"_mc"].keepMyCurrentFrame=3;
+			    theMovie["matchCheck"+i+"_mc"].setMeOn=0;
+			    theMovie["matchCheck"+i+"_mc"].clicked=0;
+			    // AUDIOScript Justification
+			    theMovie["audioJustify_"+i]._visible = false;
+			    theMovie["audioJustify_"+i].gotoAndStop(1);
+			    theMovie["audioJustify_"+i].pressed = false;
+				// Justification
+			    theMovie["i"+i+"_mc"]._visible = false;
+			    theMovie["i"+i+"_mc"].gotoAndStop(1);
+			    theMovie["i"+i+"_mc"].pressed = false;					
+		   }
+		   theMovie._parent.checkAll_mc.gotoAndStop(2);
+		}
+	
+
+		//
+		//--------------
+		theMovie._parent.checkAll_mc.gotoAndStop(theMovie._parent.checkAll_mc.myRightFrame);	
+		if (theMovie._parent.checkAll_mc._currentframe!=2){
+			theMovie._parent.checkAll_mc.enabled=true
+		}
+		//--------------
+		for (i = 0; i < theMovie.myArray.length; i++) {
+			//theMovie["i" + i + "_mc"]._visible = false;
+			theMovie["check" + i + "_mc"].gotoAndStop(theMovie["check" + i + "_mc"].myRightFrame);			
+			if (theMovie["check" + i + "_mc"]._currentframe!=3){
+				theMovie["check" + i + "_mc"].enabled=true
+			}
+			
+			theMovie["i"+i+"_mc"]._visible = false;
+
+			for (m = 0; m < myNamesArray.length; m++) {
+				
+				myButLetter = myNamesArray[m];
+				if (theMovie[myButLetter + i + "_mc"].myState == 1) {
+					theMovie[myButLetter + i + "_mc"].gotoAndStop(2)
+				}else{
+					theMovie[myButLetter + i + "_mc"].gotoAndStop(1)
+				}
+				
+				
+				if ((theMovie["check" + i + "_mc"]._currentframe!=4)&&(theMovie["check" + i + "_mc"]._currentframe!=5)){
+					if (typeof (theRightArray[i]) == "string") {
+					} else {
+						theMovie[myButLetter+i+"_mc"].enabled = true;
+					}
+					if (theMovie[myButLetter + i + "_mc"].myState == 0) {
+						theMovie[myButLetter + i + "_mc"].enabled = true;
+					}
+					// AUDIOScript Justification
+					theMovie["audioJustify_"+i]._visible = false;
+					theMovie["audioJustify_"+i].gotoAndStop(1);
+					theMovie["audioJustify_"+i].pressed = false;
+				/*
+				if (theMovie[myButLetter+i+"_mc"].clicked == 1) {
+					theMovie[myButLetter+i+"_mc"].enabled = true;
+				}
+				if (theMovie[myButLetter+i+"_mc"].clicked == 0) {
+					theMovie[myButLetter+i+"_mc"].enabled = true;
+				}
+				*/
+				} else {
+					theMovie["i"+i+"_mc"]._visible = true;					
+				}	//IF		
+			} //for
+		} //For (2)
+	} // IF 1st
+}
+//
+function checkOneAnswer() {
+	var i = this.myNum;
+	var checkAll = 0;
+	if (this.clicked == 0) {
+		this.clicked = 1;
+		//this.gotoAndStop(2);
+		var checkWrong = 0;
+		for (m=0; m<myNamesArray.length; m++) {
+			myButLetter = myNamesArray[m];
+			theMovie[myButLetter+i+"_mc"].enabled = false;
+			if (typeof (theRightArray[i]) == "string") {
+				if ((theMovie[myButLetter+i+"_mc"]._currentframe == 1) and (theMovie[myButLetter+i+"_mc"].myName == theMovie.theRightArray[i])) {
+					//------wrong!
+					checkWrong = 1;
+					theMovie[myButLetter+i+"_mc"].clicked = 1;
+				}
+				if ((theMovie[myButLetter+i+"_mc"]._currentframe == 2) and (theMovie[myButLetter+i+"_mc"].myName == theMovie.theRightArray[i])) {
+					//------correct!
+					theMovie[myButLetter+i+"_mc"].clicked = 2;
+				}
+				if ((theMovie[myButLetter+i+"_mc"]._currentframe == 2) and (theMovie[myButLetter+i+"_mc"].myName<>theMovie.theRightArray[i])) {
+					//------wrong!
+					checkWrong = 1;
+					theMovie[myButLetter+i+"_mc"].clicked = 2;
+				}
+			} else {
+				var findCorrect = 0;
+				for (k=0; k<myNamesArray.length; k++) {
+					if ((theMovie[myButLetter+i+"_mc"]._currentframe == 1) and (theMovie[myButLetter+i+"_mc"].myName == theMovie.theRightArray[i][k])) {
+						//------wrong!
+						checkWrong = 1;
+						theMovie[myButLetter+i+"_mc"].clicked = 1;
+					}
+					if ((theMovie[myButLetter+i+"_mc"]._currentframe == 2) and (theMovie[myButLetter+i+"_mc"].myName == theMovie.theRightArray[i][k])) {
+						findCorrect = 1;
+						theMovie[myButLetter+i+"_mc"].clicked = 2;
+					}
+				}
+				if ((theMovie[myButLetter+i+"_mc"]._currentframe == 2) and (findCorrect == 0)) {
+					checkWrong = 1;
+					theMovie[myButLetter+i+"_mc"].clicked = 2;
+				}
+			}
+		}
+		//When Activity Completed:
+		if (checkWrong == 0) {
+			playRightAnswer();
+			this.gotoAndStop(4);
+		} else {
+			playWrongAnswer();
+			this.gotoAndStop(5);
+		}
+		theMovie["i"+i+"_mc"]._visible = true;
+		var checkAllState = 0
+		for (i=0; i<theMovie.myArray.length; i++) {
+			if (theMovie["check"+i+"_mc"]._currentframe == 1) {
+				checkAllState = 1
+			}
+		}
+		trace("checkAllState " +checkAllState)
+		if (checkAllState == 0){
+			theMovie._parent.checkAll_mc.clicked = 1;
+			theMovie._parent.checkAll_mc.gotoAndStop(3);
+			theMovie._parent.checkAll_mc.enabled = true;
+		}
+		// AUDIOScript Justification
+		theMovie["audioJustify_"+this.myNum]._visible = true;
+		theMovie["audioJustify_"+this.myNum].gotoAndStop(1);
+		theMovie["audioJustify_"+this.myNum].pressed = false;
+	} else {
+		this.clicked = 0;
+		this.gotoAndStop(1);
+		//theMovie._parent.checkAll_mc.clicked = 0;
+		//theMovie._parent.checkAll_mc.gotoAndStop(1)
+		//for (i = 0; i < theMovie.myArray.length; i++) {
+		theMovie["i"+i+"_mc"]._visible = false;
+		for (m=0; m<myNamesArray.length; m++) {
+			myButLetter = myNamesArray[m];
+			if (typeof (theRightArray[i]) == "string") {
+			} else {
+				theMovie[myButLetter+i+"_mc"].enabled = true;
+			}
+			if (theMovie[myButLetter+i+"_mc"].clicked == 1) {
+				theMovie[myButLetter+i+"_mc"].enabled = true;
+			}
+			if (theMovie[myButLetter+i+"_mc"].clicked == 0) {
+				theMovie[myButLetter+i+"_mc"].enabled = true;
+			}
+			if (theMovie[myButLetter+i+"_mc"].clicked == 2) {
+				theMovie[myButLetter+i+"_mc"].clicked = 0;
+			}
+		}
+
+		trace("checkAllState " +checkAllState)
+		theMovie._parent.checkAll_mc.clicked = 0;
+		theMovie._parent.checkAll_mc.gotoAndStop(1);
+		theMovie._parent.checkAll_mc.enabled = true;
+		// AUDIOScript Justification
+		theMovie["audioJustify_"+this.myNum]._visible = false;
+		theMovie["audioJustify_"+this.myNum].gotoAndStop(1);
+		theMovie["audioJustify_"+this.myNum].pressed = false;
+		
+	}
+
+}
+// ------------------------------------------ show text ----------------------------------------------------
+function initShowText() {
+	theMovie._parent.showText_mc.clicked = 0;
+	theMovie._parent.showText_mc.onRelease = showMyText;
+	theMovie.text_1_mc._visible = false;
+	theMovie.text_1_mc.white_mc.useHandCursor = false;
+	theMovie.text_1_mc.white_mc.onPress = function() {
+	};
+}
+//
+function showMyText() {
+	theTextPointer._parent.InitScrollBar();
+	if (this.clicked == 0) {
+		this.clicked = 1;
+		theMovie._parent.showText_mc.gotoAndPlay(3);
+		theMovie.text_1_mc._visible = true;
+		for (i=0; i<theMovie.theRightArray.length; i++) {
+			theMovie.theTextPointer["justification"+i+"_mc"]._visible = false;
+		}
+		_root.sb1.send("showXCanvas", "ShowText");
+	} else {
+		this.clicked = 0;
+		theMovie._parent.showText_mc.gotoAndPlay(1);
+		theMovie.text_1_mc._visible = false;
+		for (i=0; i<theMovie.theRightArray.length; i++) {
+			theMovie["i"+i+"_mc"].pressed = false;
+		}
+		_root.sb1.send("hideXCanvas", "ShowText");
+	}
+}
+
+//--------------------------------------------------------------
+initTrueFalse(theMovie.theRightArray.length, theMovie.numOfChoices, theMovie.isTrueFalse);
+initShowText();
