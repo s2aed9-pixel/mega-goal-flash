@@ -1,7 +1,18 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+    <script>
+    window.RufflePlayer = window.RufflePlayer || {};
+    window.RufflePlayer.config = {
+        "quality": "low",          // تقليل جودة الجرافيك لزيادة سرعة الحركة
+        "maxHardwareVideoDecoders": 2, 
+        "scale": "showAll",       // لضمان ظهور الكتاب كاملاً على شاشة الآيباد
+        "forceScale": true,
+        "letterbox": "on",
+        "warnOnUnsupportedContent": false
+    };
+</script>
+<script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="MEGA GOAL 2 - Interactive Educational Content">
