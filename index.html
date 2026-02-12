@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="MEGA GOAL 2 - Interactive Educational Content">
+    <meta name="keywords" content="MEGA GOAL, English Learning, Interactive">
+    <title>MEGA GOAL 2 - COMBO INTERACTIVE</title>
+    
+    <!-- Ruffle Flash Emulator -->
+    <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            animation: fadeIn 1s ease-in;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            width: 100%;
+            max-width: 1200px;
+            animation: slideUp 0.8s ease-out;
+        }
+        
+        .flash-wrapper {
+            position: relative;
+            width: 100%;
+            background: #000;
+            min-height: 600px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #ruffle-container {
+            width: 100%;
+            height: 100%;
+        }
+        
+        ruffle-player {
+            width: 100% !important;
+            height: 600px !important;
+            display: block;
+        }
+        
+        .loading-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: opacity 0.5s ease-out;
+        }
+        
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid #4ecdc4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        .loading-text {
+            color: #4ecdc4;
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        .footer {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .footer-content {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .footer-content strong {
+            color: #667eea;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: #4ecdc4;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            margin: 5px;
+            font-weight: 600;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .header p {
+                font-size: 14px;
+            }
+            
+            ruffle-player {
+                height: 500px !important;
+            }
+            
+            .container {
+                border-radius: 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header {
+                margin-bottom: 20px;
+            }
+            
+            .header h1 {
+                font-size: 20px;
+            }
+            
+            ruffle-player {
+                height: 400px !important;
+            }
+            
+            .footer {
+                padding: 15px;
+            }
+        }
+        
+        /* iPad specific */
+        @media only screen 
+        and (min-device-width: 768px) 
+        and (max-device-width: 1024px) {
+            ruffle-player {
+                height: 700px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📚 MEGA GOAL 2</h1>
+        <p>COMBO INTERACTIVE - تفاعلي وممتع</p>
+    </div>
+    
+    <div class="container">
+        <div class="flash-wrapper">
+            <div id="ruffle-container">
+                <div class="loading-screen" id="loadingScreen">
+                    <div class="spinner"></div>
+                    <div class="loading-text">جاري التحميل...</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div class="footer-content">
+                <div style="margin-bottom: 10px;">
+                    <span class="badge">✅ يعمل على الآيباد</span>
+                    <span class="badge">✅ بدون Flash</span>
+                    <span class="badge">✅ تفاعلي</span>
+                </div>
+                <p><strong>تقنية:</strong> Ruffle Flash Emulator</p>
+                <p style="margin-top: 5px; font-size: 12px; color: #999;">
+                    متوافق مع جميع المتصفحات الحديثة والأجهزة المحمولة
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // تكوين Ruffle
+        window.RufflePlayer = window.RufflePlayer || {};
+        
+        // إعدادات Ruffle العامة
+        window.RufflePlayer.config = {
+            autoplay: "on",
+            unmuteOverlay: "visible",
+            backgroundColor: "#000000",
+            letterbox: "on",
+            warnOnUnsupportedContent: false,
+            logLevel: "error",
+            maxExecutionDuration: 15,
+            playerVersion: null,
+            preferredRenderer: "webgl",
+            openUrlMode: "allow",
+            allowNetworking: "all",
+            favoriteFlashVersion: null,
+            wmode: "window",
+            quality: "high",
+            scale: "showAll",
+            allowScriptAccess: true,
+            upgradeToHttps: true
+        };
+
+        // تحميل المحتوى
+        window.addEventListener("load", function() {
+            const ruffle = window.RufflePlayer.newest();
+            const player = ruffle.createPlayer();
+            const container = document.getElementById("ruffle-container");
+            const loadingScreen = document.getElementById("loadingScreen");
+            
+            // إضافة المشغل
+            player.id = "player";
+            container.appendChild(player);
+            
+            // تحميل ملف SWF
+            player.load({
+                url: "main.swf",
+                parameters: "",
+                autoplay: "on",
+                backgroundColor: "#000000",
+                letterbox: "on",
+                unmuteOverlay: "visible",
+                upgradeToHttps: window.location.protocol === "https:",
+                warnOnUnsupportedContent: false,
+                logLevel: "error",
+                showSwfDownload: false,
+                contextMenu: "on",
+                preloader: true,
+                splashScreen: true,
+                maxExecutionDuration: 15,
+                base: window.location.href,
+                quality: "high",
+                scale: "showAll",
+                wmode: "window"
+            });
+            
+            // إخفاء شاشة التحميل بعد ثانيتين
+            setTimeout(function() {
+                loadingScreen.classList.add('hidden');
+                setTimeout(function() {
+                    loadingScreen.remove();
+                }, 500);
+            }, 2000);
+            
+            // معالجة الأخطاء
+            player.addEventListener("error", function(event) {
+                console.error("Ruffle Error:", event);
+                loadingScreen.innerHTML = `
+                    <div style="text-align: center; color: #ff6b6b; padding: 20px;">
+                        <h3 style="margin-bottom: 15px;">⚠️ حدث خطأ في التحميل</h3>
+                        <p style="margin-bottom: 10px;">يرجى التحقق من:</p>
+                        <ul style="text-align: right; list-style: none; line-height: 2;">
+                            <li>✓ وجود ملف main.swf في نفس المجلد</li>
+                            <li>✓ الاتصال بالإنترنت</li>
+                            <li>✓ تحديث المتصفح</li>
+                        </ul>
+                        <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 20px; cursor: pointer; font-size: 14px;">
+                            🔄 إعادة المحاولة
+                        </button>
+                    </div>
+                `;
+            });
+        });
+        
+        // منع التكبير المزدوج على iOS
+        document.addEventListener('touchmove', function(event) {
+            if (event.scale !== 1) {
+                event.preventDefault();
+            }
+        }, { passive: false });
+    </script>
+</body>
+</html>
